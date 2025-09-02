@@ -1,0 +1,181 @@
+{
+  "apiVersion": 2,
+  "name": "marketdope/landing-nobuild",
+  "title": "MarketDope Landing (No-Build)",
+  "category": "design",
+  "icon": "layout",
+  "description": "Editable landing page block (hero, services, audience, why-us, testimonial, final CTA). No CLI required.",
+  "textdomain": "marketdope",
+  "keywords": [
+    "landing",
+    "hero",
+    "cta",
+    "marketdope"
+  ],
+  "supports": {
+    "html": false,
+    "align": true
+  },
+  "editorScript": "marketdope-landing-editor",
+  "style": "marketdope-landing-style",
+  "attributes": {
+    "headline": {
+      "type": "string",
+      "default": "Your AI Co-Founder for<br>Traders & Solopreneurs"
+    },
+    "subheadline": {
+      "type": "string",
+      "default": "Stop drowning in manual tasks. Automate your workflows, unlock smarter trading insights, and grow your business while you sleep."
+    },
+    "ctaText": {
+      "type": "string",
+      "default": "\ud83d\udcde Book Your Free Strategy Call"
+    },
+    "ctaHref": {
+      "type": "string",
+      "default": "#contact"
+    },
+    "metrics": {
+      "type": "array",
+      "default": [
+        {
+          "value": "$47K",
+          "label": "Monthly Revenue"
+        },
+        {
+          "value": "23%",
+          "label": "Win Rate"
+        },
+        {
+          "value": "15hrs",
+          "label": "Time Saved"
+        },
+        {
+          "value": "34",
+          "label": "Active Clients"
+        }
+      ]
+    },
+    "servicesTitle": {
+      "type": "string",
+      "default": "Smarter Systems, Built for You"
+    },
+    "services": {
+      "type": "array",
+      "default": [
+        {
+          "icon": "\ud83e\udd16",
+          "title": "AI Workflow Automation",
+          "desc": "Transform your repetitive tasks into smart, automated systems. From client onboarding to trade analysis, let AI handle the grunt work so you can focus on strategy and growth."
+        },
+        {
+          "icon": "\ud83d\udcca",
+          "title": "Data Dashboards That Actually Matter",
+          "desc": "See everything that matters in one place. Track clients, trades, revenue, and performance metrics with dashboards designed for real-world decision making, not just pretty charts."
+        },
+        {
+          "icon": "\u26a1",
+          "title": "Trading Automation Kit",
+          "desc": "Level up your trading game with pro-level tools that work for solo traders. Get automated alerts, risk management, and performance tracking without the enterprise price tag."
+        },
+        {
+          "icon": "\ud83c\udfaf",
+          "title": "Customer Discovery Kit",
+          "desc": "Stop guessing what your market wants. Our proven system helps you validate ideas, find paying clients, and build products people actually need before you waste time building."
+        }
+      ]
+    },
+    "audienceTitle": {
+      "type": "string",
+      "default": "Built for Hustlers Like You"
+    },
+    "audience": {
+      "type": "array",
+      "default": [
+        {
+          "icon": "\ud83d\udcc8",
+          "title": "Day Traders",
+          "desc": "You're tired of staring at screens all day and missing opportunities. Our automation handles the monitoring, alerts, and analysis so you can execute with confidence and actually have a life."
+        },
+        {
+          "icon": "\ud83d\ude80",
+          "title": "Freelancers & Solopreneurs",
+          "desc": "Juggling clients, invoices, projects, and growth feels impossible. We build systems that manage the chaos so you can focus on delivering great work and scaling your business."
+        },
+        {
+          "icon": "\ud83d\udc65",
+          "title": "Small Teams",
+          "desc": "You need enterprise-level efficiency without enterprise complexity. Our streamlined solutions keep everyone aligned and productive without drowning in tools and processes."
+        }
+      ]
+    },
+    "whyTitle": {
+      "type": "string",
+      "default": "AI Without the BS"
+    },
+    "why": {
+      "type": "array",
+      "default": [
+        {
+          "icon": "\u26a1",
+          "title": "Results Today, Not Tomorrow",
+          "desc": "No 6-month implementation timelines. We build practical automation that saves you time from day one, not theoretical solutions that might work someday."
+        },
+        {
+          "icon": "\ud83d\udde3\ufe0f",
+          "title": "Plain English, Zero Jargon",
+          "desc": "We speak human, not tech-bro. Clear explanations, honest timelines, and straightforward solutions. No buzzwords, no hype, just stuff that works."
+        },
+        {
+          "icon": "\ud83d\udd25",
+          "title": "Battle-Tested in the Trenches",
+          "desc": "These aren't academic theories. Every system we build has been tested in real trading environments and actual businesses. We know what works because we've done it ourselves."
+        }
+      ]
+    },
+    "secondaryCtaText": {
+      "type": "string",
+      "default": "Ready to Get Your Time Back? Let's Build Your System"
+    },
+    "secondaryCtaHref": {
+      "type": "string",
+      "default": "#contact"
+    },
+    "testimonialTitle": {
+      "type": "string",
+      "default": "What Real Users Say"
+    },
+    "testimonialText": {
+      "type": "string",
+      "default": "\"I went from spending 4 hours a day on admin work to 30 minutes. The trading automation caught 3 opportunities I would have completely missed while I was in client calls. This literally paid for itself in the first week.\""
+    },
+    "testimonialAuthor": {
+      "type": "string",
+      "default": "\u2014 Sarah M., Independent Day Trader"
+    },
+    "finalTitle": {
+      "type": "string",
+      "default": "Ready to Work Smarter, Not Harder?"
+    },
+    "finalText": {
+      "type": "string",
+      "default": "MarketDope is your AI co-founder. Let's build the system that frees you to focus on growth instead of busy work."
+    },
+    "finalCtaText": {
+      "type": "string",
+      "default": "\ud83d\udcde Book Your Free Strategy Call"
+    },
+    "finalCtaHref": {
+      "type": "string",
+      "default": "#contact"
+    },
+    "finalSub": {
+      "type": "string",
+      "default": "30-minute call \u2022 No sales pitch \u2022 Just real solutions"
+    },
+    "typeformId": {
+      "type": "string",
+      "default": "01K3HXV4Y2A0S4ARX3ESZSQM9E"
+    }
+  }
+}
