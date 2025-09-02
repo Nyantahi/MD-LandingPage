@@ -1,52 +1,71 @@
-(function(){
-  function ensureTF(cb){
-    if (window.tf && window.tf.createPopup) { cb(); return; }
-    var s = document.createElement('script');
-    s.src = "https://embed.typeform.com/next/embed.js";
-    s.async = true;
-    s.onload = cb;
-    document.head.appendChild(s);
+// view.js — robust popup binding using Typeform's embed API
+(function () {
+  function onReady(fn) {
+    if (document.readyState !== 'loading') fn();
+    else document.addEventListener('DOMContentLoaded', fn);
   }
 
-  function getId(root, el){
-    var id = '';
-    if (el) {
-      id = el.getAttribute('data-tf-popup') || '';
-      if (!id) {
-        var span = el.querySelector('[data-tf-popup]');
-        if (span) id = span.getAttribute('data-tf-popup') || '';
+  function whenTFReady(cb) {
+    // Wait for the SDK to expose window.tf.createPopup
+    if (window.tf && typeof window.tf.createPopup === 'function') return cb();
+    let tries = 0;
+    const iv = setInterval(() => {
+      if (window.tf && typeof window.tf.createPopup === 'function') {
+        clearInterval(iv);
+        cb();
+      } else if (++tries > 60) {
+        clearInterval(iv);
+        console.warn('[MarketDope] Typeform SDK not ready.');
       }
+    }, 100);
+  }
+
+  onReady(function () {
+    var id = (typeof window.MD_TF_ID === 'string' && window.MD_TF_ID.trim()) ? window.MD_TF_ID.trim() : '';
+
+    if (!id) {
+      console.warn('[MarketDope] No Typeform ID available.');
+      return;
     }
-    if (!id && root && root.dataset) id = root.dataset.typeformId || '';
-    return id;
-  }
 
-  function wire(){
-    var root = document.querySelector('.marketdope-landing');
-    if (!root) return;
-
-    root.addEventListener('click', function(e){
-      var link = e.target.closest('.marketdope-landing .cta-button');
-      if (!link) return;
-      var href = link.getAttribute('href') || link.getAttribute('data-href') || '#';
-      var id = getId(root, link);
-      if (!id) return; // let normal link behavior continue
-
-      e.preventDefault();
-      ensureTF(function(){
-        try {
-          var popup = window.tf.createPopup(id, { size: 70, hideScrollbars: true });
-          popup.open();
-        } catch (err) {
-          if (href && href !== '#') window.location.href = href;
-        }
+    whenTFReady(function () {
+      // Build the popup once
+      var popup = window.tf.createPopup(id, {
+        medium: 'wordpress',
+        size: 70, // % of viewport; matches data-tf-size
+        // You can add more options if needed:
+        // hideFooter: true, hideHeaders: true, autoClose: true, etc.
       });
-    }, { passive: false });
-  }
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', wire);
-  } else {
-    wire();
-  }
+      // Click targets: anchors or buttons you want to open the popup.
+      // Add data-md-open-typeform to any CTA, or use class 'md-cta',
+      // or link to #open-typeform.
+      var selectors = [
+        '[data-md-open-typeform]',
+        'a.md-cta',
+        'button.md-cta',
+        'a[href*="#open-typeform"]',
+        'button[href*="#open-typeform"]'
+      ];
+      var nodes = document.querySelectorAll(selectors.join(','));
+
+      if (!nodes.length) {
+        // As a safety net, delegate on the document (catches late-rendered CTAs)
+        document.addEventListener('click', function (e) {
+          var t = e.target.closest(selectors.join(','));
+          if (t) {
+            e.preventDefault();
+            popup.toggle();
+          }
+        });
+      } else {
+        nodes.forEach(function (el) {
+          el.addEventListener('click', function (e) {
+            e.preventDefault();
+            popup.toggle();
+          });
+        });
+      }
+    });
+  });
 })();
