@@ -95,7 +95,7 @@ function marketdope_extract_typeform_id( $value ) {
 
 /**
  * Server-render: expose the normalized ID to the front-end.
- * Assumes your block attribute key is `typeformUrlOrId` (update if different).
+ * Assumes your block attribute key is using `typeformUrlOrId` (update if different).
  * The front-end `view.js` will open a popup with this ID on your chosen CTAs.
  */
 function marketdope_landing_render( $attributes, $content ) {
