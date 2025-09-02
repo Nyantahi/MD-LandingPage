@@ -1,8 +1,8 @@
 <?php
 /**
- * Plugin Name: MarketDope Landing Block (Full + Typeform, v4)
- * Description: Landing page Gutenberg block with reliable Typeform popup. Normalizes URL→ID server-side and opens via JS API on selected CTAs.
- * Version: 1.1.4
+ * Plugin Name: MarketDope Landing Block (Full + Typeform, v5)
+ * Description: Landing page Gutenberg block with reliable Typeform popup. Detects form ID + domain from pasted URL and opens via SDK.
+ * Version: 1.1.5
  * Author: Market Dope
  * License: GPL-2.0-or-later
  */
@@ -14,7 +14,7 @@ add_action( 'init', function () {
         'marketdope-landing-editor',
         plugins_url( 'index.js', __FILE__ ),
         array( 'wp-blocks', 'wp-element', 'wp-i18n', 'wp-block-editor', 'wp-components' ),
-        '1.1.4',
+        '1.1.5',
         true
     );
 
@@ -22,18 +22,18 @@ add_action( 'init', function () {
         'marketdope-landing-style',
         plugins_url( 'style.css', __FILE__ ),
         array(),
-        '1.1.4'
+        '1.1.5'
     );
 
     wp_register_script(
         'marketdope-landing-view',
         plugins_url( 'view.js', __FILE__ ),
         array(),
-        '1.1.4',
+        '1.1.5',
         true
     );
 
-    // Typeform assets (HTML/data-tf & JS API both come from this script)
+    // Typeform SDK + optional popup CSS
     wp_register_script(
         'typeform-embed',
         'https://embed.typeform.com/next/embed.js',
@@ -52,12 +52,12 @@ add_action( 'init', function () {
         'editor_script'   => 'marketdope-landing-editor',
         'style'           => 'marketdope-landing-style',
         'view_script'     => 'marketdope-landing-view',
-        'script'          => 'typeform-embed',      // ensure SDK present on pages using this block
+        'script'          => 'typeform-embed',
         'render_callback' => 'marketdope_landing_render',
     ) );
 } );
 
-// Frontend + editor: enqueue styles/JS once (avoid double-loading conflicts)
+// Frontend + editor: enqueue once
 add_action( 'wp_enqueue_scripts', function(){
     wp_enqueue_style( 'marketdope-landing-style' );
     wp_enqueue_style( 'typeform-popup-css' );
@@ -72,41 +72,71 @@ add_action( 'enqueue_block_editor_assets', function(){
     wp_enqueue_script( 'marketdope-landing-view' );
 }, 20 );
 
-/** Extract a valid Typeform ID from either a raw ID or a full URL. */
-function marketdope_extract_typeform_id( $value ) {
+/**
+ * Extract form ID + domain from a Typeform URL or raw ID.
+ *
+ * Accepts:
+ *  - https://form.typeform.com/to/ABC123
+ *  - https://yourbrand.typeform.com/to/ABC123
+ *  - https://admin.typeform.com/form/ABC123
+ *  - ABC123 (raw ID)
+ *
+ * Returns [ 'id' => 'ABC123', 'domain' => 'https://form.typeform.com' or 'https://yourbrand.typeform.com' ]
+ */
+function marketdope_extract_typeform_info( $value ) {
     $value = trim( (string) $value );
 
-    // Common full URL patterns:
-    // https://form.typeform.com/to/ABC123
-    // https://typeform.com/to/ABC123
-    // https://admin.typeform.com/form/ABC123
-    // also support custom domains pointing at typeform (domain.tld/to/ABC123)
-    if ( preg_match( '~/(?:to|form|forms)/([A-Za-z0-9]+)(?:[/?#]|$)~', $value, $m ) ) {
-        return $m[1];
+    // Full URLs
+    if ( preg_match( '~^(https?://[^/]+)/(?:to|form|forms)/([A-Za-z0-9]+)(?:[/?#]|$)~', $value, $m ) ) {
+        $host = $m[1];                 // e.g. https://form.typeform.com OR https://yourbrand.typeform.com
+        $id   = $m[2];                 // e.g. ABC123
+        // Normalize protocol to https
+        if ( strpos($host, 'http://') === 0 ) {
+            $host = 'https://' . substr($host, 7);
+        }
+        return array(
+            'id'     => $id,
+            'domain' => $host,
+        );
     }
 
-    // Raw ID heuristic
+    // admin.typeform.com/form/ID (no host captured above)
+    if ( preg_match( '~admin\.typeform\.com/(?:form|forms)/([A-Za-z0-9]+)~', $value, $m ) ) {
+        return array(
+            'id'     => $m[1],
+            'domain' => 'https://form.typeform.com',
+        );
+    }
+
+    // Raw ID
     if ( preg_match( '~^[A-Za-z0-9]{6,}$~', $value ) ) {
-        return $value;
+        return array(
+            'id'     => $value,
+            'domain' => 'https://form.typeform.com',
+        );
     }
 
-    return '';
+    return array( 'id' => '', 'domain' => 'https://form.typeform.com' );
 }
 
 /**
- * Server-render: expose the normalized ID to the front-end.
- * Assumes your block attribute key is `typeformUrlOrId` (update if different).
- * The front-end `view.js` will open a popup with this ID on your chosen CTAs.
+ * Server-render: expose normalized ID + domain to view.js and add a hidden HTML activator as a fallback.
+ * Assumes block attribute key is `typeformUrlOrId`.
  */
 function marketdope_landing_render( $attributes, $content ) {
     $raw = isset( $attributes['typeformUrlOrId'] ) ? $attributes['typeformUrlOrId'] : '';
-    $id  = marketdope_extract_typeform_id( $raw );
+    $info = marketdope_extract_typeform_info( $raw );
+    $id   = $info['id'];
+    $dom  = $info['domain'];
 
-    // Make the ID available to view.js
-    $inline = 'window.MD_TF_ID = ' . wp_json_encode( $id ) . ';';
+    // Hand off to front-end before view.js executes.
+    $inline = 'window.MD_TF = ' . wp_json_encode( array(
+        'id'     => $id,
+        'domain' => $dom,
+    ) ) . ';';
     wp_add_inline_script( 'marketdope-landing-view', $inline, 'before' );
 
-    // Optional: add a hidden activator using the HTML embed as a fallback (not clicked by users)
+    // Optional hidden activator (HTML embed fallback)
     if ( $id ) {
         $content .= '<a style="display:none" aria-hidden="true" data-tf-popup="' . esc_attr( $id ) . '"></a>';
     } else {
